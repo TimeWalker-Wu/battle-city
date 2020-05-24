@@ -1,7 +1,9 @@
 package com.qingting.battlecity.frame;
 
 import com.qingting.battlecity.base.DirectionEnum;
+import com.qingting.battlecity.base.ResourceMgr;
 import com.qingting.battlecity.base.SpeedLevelEnum;
+import com.qingting.battlecity.base.TankGroupEnum;
 import com.qingting.battlecity.entry.Tank;
 import com.qingting.battlecity.graphics.TankGraphics;
 
@@ -10,6 +12,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @Author: qingting
@@ -21,7 +26,10 @@ public class BattleCityFrame extends Frame {
     private static final int GAME_WIDTH = 800;
     private static final int GAME_HEIGHT = 600;
 
-    private TankGraphics tankGraphics = new TankGraphics(new Tank(200, 200, SpeedLevelEnum.LEVEL_THREE, DirectionEnum.DOWN), this);
+    private TankGraphics tankGraphics = new TankGraphics(
+            new Tank(GAME_WIDTH / 2 - ResourceMgr.tankUp.getWidth(), GAME_HEIGHT - ResourceMgr.tankUp.getHeight(),
+                    SpeedLevelEnum.LEVEL_THREE, DirectionEnum.UP, TankGroupEnum.FRIEND), this);
+    public List<TankGraphics> enemyTanks = new ArrayList<>();
 
     public BattleCityFrame() {
         this.setSize(GAME_WIDTH, GAME_HEIGHT);
@@ -57,6 +65,23 @@ public class BattleCityFrame extends Frame {
     @Override
     public void paint(Graphics g) {
         tankGraphics.paint(g);
+
+        for (int i = 0; i < enemyTanks.size(); i++) {
+            Random random = new Random();
+            int rInt = random.nextInt(100);
+            if (rInt % 50 == 0) {
+                enemyTanks.get(i).setTankDir(DirectionEnum.LEFT);
+            } else if (rInt % 50 == 15){
+                enemyTanks.get(i).setTankDir(DirectionEnum.UP);
+            } else if (rInt % 50 == 30) {
+                enemyTanks.get(i).setTankDir(DirectionEnum.RIGHT);
+            } else if (rInt % 50 == 45) {
+                enemyTanks.get(i).setTankDir(DirectionEnum.DOWN);
+            } else if (rInt % 50 == 16) {
+                enemyTanks.get(i).fire();
+            }
+            enemyTanks.get(i).paint(g);
+        }
     }
 
     class MyKeyListener extends KeyAdapter {

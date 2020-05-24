@@ -33,6 +33,10 @@ public class TankGraphics {
         this.moving = moving;
     }
 
+    public Tank getTank() {
+        return tank;
+    }
+
     private List<BulletGraphics> bgs = new ArrayList<>();
 
     public void paint(Graphics g) {
@@ -41,9 +45,23 @@ public class TankGraphics {
         g.drawString("子弹数量: " + bgs.size(), 10, 60);
         g.setColor(c);
 
+        c = g.getColor();
+        g.setColor(Color.WHITE);
+        g.drawString("敌人数量: " + frame.enemyTanks.size(), 10, 80);
+        g.setColor(c);
+
+        if (!tank.isLiving()) {
+            frame.enemyTanks.remove(this);
+        }
+
         // 坦克开火
         for (int i = 0; i < bgs.size(); i++) {
-            if (!bgs.get(i).isLive()) {
+            // 子弹和坦克的碰撞检测
+            for (int j = 0; j < frame.enemyTanks.size(); j++) {
+                bgs.get(i).collideWith(frame.enemyTanks.get(j));
+            }
+
+            if (!bgs.get(i).getBullet().isLiving()) {
                 bgs.remove(i);
                 continue;
             }
@@ -54,15 +72,23 @@ public class TankGraphics {
         switch (tank.getDirectionEnum()) {
             case LEFT:
                 g.drawImage(ResourceMgr.tankLeft, tank.getX(), tank.getY(), null);
+                tank.setWidth(ResourceMgr.tankLeft.getWidth());
+                tank.setHeight(ResourceMgr.tankLeft.getHeight());
                 break;
             case UP:
                 g.drawImage(ResourceMgr.tankUp, tank.getX(), tank.getY(), null);
+                tank.setWidth(ResourceMgr.tankUp.getWidth());
+                tank.setHeight(ResourceMgr.tankUp.getHeight());
                 break;
             case RIGHT:
                 g.drawImage(ResourceMgr.tankRight, tank.getX(), tank.getY(), null);
+                tank.setWidth(ResourceMgr.tankRight.getWidth());
+                tank.setHeight(ResourceMgr.tankRight.getHeight());
                 break;
             case DOWN:
                 g.drawImage(ResourceMgr.tankDown, tank.getX(), tank.getY(), null);
+                tank.setWidth(ResourceMgr.tankDown.getWidth());
+                tank.setHeight(ResourceMgr.tankDown.getHeight());
                 break;
         }
 
@@ -81,25 +107,59 @@ public class TankGraphics {
         if (!moving) {
             return;
         }
-        int x = tank.getX();
-        int y = tank.getY();
-        int speed = tank.getSpeedLevelEnum().getLevel();
+
+        if (!checkBoundary()) {
+            return;
+        }
+
+        // 移动边界检测，如果移动的速度小于或者大于边界值，靠近边境的最后一次移动刚好到达边界(降速）
+        int speedLevel = tank.getSpeedLevelEnum().getLevel();
         switch (tank.getDirectionEnum()) {
             case LEFT:
-                tank.setX(x - speed);
+                if (tank.getX() - speedLevel < 0) {
+                    speedLevel = tank.getX();
+                }
+                tank.setX(tank.getX() - speedLevel);
                 break;
             case UP:
-                tank.setY(y - speed);
+                if (tank.getY() - speedLevel < frame.getInsets().top) {
+                    speedLevel = tank.getY() - frame.getInsets().top;
+                }
+                tank.setY(tank.getY() - speedLevel);
                 break;
             case RIGHT:
-                tank.setX(x + speed);
+                if (tank.getX() + speedLevel > frame.getWidth() - tank.getWidth()) {
+                    speedLevel = frame.getWidth() - tank.getWidth() - tank.getX();
+                }
+                tank.setX(tank.getX() + speedLevel);
                 break;
             case DOWN:
-                tank.setY(y + speed);
+                if (tank.getY() + speedLevel > frame.getHeight() - tank.getHeight()) {
+                    speedLevel = frame.getHeight() - tank.getHeight() - tank.getY();
+                }
+                tank.setY(tank.getY() + speedLevel);
                 break;
         }
     }
 
+    /**
+     * 边境检测
+     */
+    private boolean checkBoundary() {
+        // 计算 X 轴是否超出边界
+        if (tank.getX() < 0 || tank.getX() > frame.getWidth() - tank.getWidth()) {
+            return false;
+        }
+        // 计算 Y 轴是否超出边界
+        if (tank.getY() < 0 || tank.getY() > frame.getHeight() - tank.getHeight()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 坦克开火
+     */
     public void fire() {
         // 开火前计算子弹在坦克出现的位置
         int bulletX = 0, bulletY = 0;
@@ -121,7 +181,14 @@ public class TankGraphics {
                 bulletY = tank.getY() + ResourceMgr.tankDown.getWidth() - ResourceMgr.bulletDown.getHeight();
                 break;
         }
-        Bullet bullet = new Bullet(bulletX, bulletY, SpeedLevelEnum.LEVEL_FOUR, tank.getDirectionEnum());
+        Bullet bullet = new Bullet(bulletX, bulletY, SpeedLevelEnum.LEVEL_FOUR, tank.getDirectionEnum(), tank.getTankGroupEnum());
         bgs.add(new BulletGraphics(bullet, frame));
+    }
+
+    /**
+     * 坦克死亡
+     */
+    public void die() {
+        tank.setLiving(false);
     }
 }
