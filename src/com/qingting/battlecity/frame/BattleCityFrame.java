@@ -1,10 +1,8 @@
 package com.qingting.battlecity.frame;
 
-import com.qingting.battlecity.base.DirectionEnum;
-import com.qingting.battlecity.base.ResourceMgr;
-import com.qingting.battlecity.base.SpeedLevelEnum;
-import com.qingting.battlecity.base.TankGroupEnum;
+import com.qingting.battlecity.base.*;
 import com.qingting.battlecity.entry.Tank;
+import com.qingting.battlecity.graphics.ExplodeGraphics;
 import com.qingting.battlecity.graphics.TankGraphics;
 
 import java.awt.*;
@@ -26,10 +24,13 @@ public class BattleCityFrame extends Frame {
     private static final int GAME_WIDTH = 800;
     private static final int GAME_HEIGHT = 600;
 
+    private Random random = new Random();
+
     private TankGraphics tankGraphics = new TankGraphics(
             new Tank(GAME_WIDTH / 2 - ResourceMgr.tankUp.getWidth(), GAME_HEIGHT - ResourceMgr.tankUp.getHeight(),
                     SpeedLevelEnum.LEVEL_THREE, DirectionEnum.UP, TankGroupEnum.FRIEND), this);
     public List<TankGraphics> enemyTanks = new ArrayList<>();
+    public List<ExplodeGraphics> explodes = new ArrayList<>();
 
     public BattleCityFrame() {
         this.setSize(GAME_WIDTH, GAME_HEIGHT);
@@ -67,20 +68,17 @@ public class BattleCityFrame extends Frame {
         tankGraphics.paint(g);
 
         for (int i = 0; i < enemyTanks.size(); i++) {
-            Random random = new Random();
-            int rInt = random.nextInt(100);
-            if (rInt % 50 == 0) {
-                enemyTanks.get(i).setTankDir(DirectionEnum.LEFT);
-            } else if (rInt % 50 == 15){
-                enemyTanks.get(i).setTankDir(DirectionEnum.UP);
-            } else if (rInt % 50 == 30) {
-                enemyTanks.get(i).setTankDir(DirectionEnum.RIGHT);
-            } else if (rInt % 50 == 45) {
-                enemyTanks.get(i).setTankDir(DirectionEnum.DOWN);
-            } else if (rInt % 50 == 16) {
+            if (random.nextInt(300) > 295) {
                 enemyTanks.get(i).fire();
             }
+            if (random.nextInt(200) > 195) {
+                enemyTanks.get(i).setTankDir(DirectionEnum.values()[random.nextInt(4)]);
+            }
             enemyTanks.get(i).paint(g);
+        }
+
+        for (int i = 0; i < explodes.size(); i++) {
+            explodes.get(i).paint(g);
         }
     }
 
@@ -115,6 +113,7 @@ public class BattleCityFrame extends Frame {
             }
 
             setMainTankDir();
+
         }
 
         @Override

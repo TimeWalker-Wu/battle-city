@@ -1,9 +1,6 @@
 package com.qingting.battlecity;
 
-import com.qingting.battlecity.base.DirectionEnum;
-import com.qingting.battlecity.base.ResourceMgr;
-import com.qingting.battlecity.base.SpeedLevelEnum;
-import com.qingting.battlecity.base.TankGroupEnum;
+import com.qingting.battlecity.base.*;
 import com.qingting.battlecity.entry.Tank;
 import com.qingting.battlecity.frame.BattleCityFrame;
 import com.qingting.battlecity.graphics.TankGraphics;
@@ -24,6 +21,8 @@ public class Main {
             enemyTank.setMoving(true);
             bcf.enemyTanks.add(enemyTank);
         }
+
+        // new Thread(()->new Audio("resources/audio/bg.wav").loop()).start();
 
         while (true) {
             Thread.sleep(50);
